@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 from django.contrib.sites.models import Site
 from django.utils.encoding import python_2_unicode_compatible
+from django.contrib.sites.models import get_current_site
 
 from .. import app_settings as allauth_app_settings
 from . import app_settings
@@ -109,7 +110,8 @@ class EmailConfirmation(models.Model):
     def send(self, request, signup=False, **kwargs):
         current_site = kwargs["site"] if "site" in kwargs else Site.objects.get_current()
         activate_url = reverse("account_confirm_email", args=[self.key])
-        activate_url = request.build_absolute_uri(activate_url)
+        domain = get_current_site(request).domain
+        activate_url = "http://{}{}".format(domain, activate_url)
         ctx = {
             "user": self.email_address.user,
             "activate_url": activate_url,
